@@ -21,17 +21,8 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\inventory;
+namespace pocketmine\block\inventory\window;
 
-use pocketmine\crafting\CraftingGrid;
-use pocketmine\inventory\TemporaryInventory;
-use pocketmine\world\Position;
+final class HopperInventoryWindow extends BlockInventoryWindow{
 
-final class CraftingTableInventory extends CraftingGrid implements BlockInventory, TemporaryInventory{
-	use BlockInventoryTrait;
-
-	public function __construct(Position $holder){
-		$this->holder = $holder;
-		parent::__construct(CraftingGrid::SIZE_BIG);
-	}
 }

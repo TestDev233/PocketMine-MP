@@ -21,16 +21,12 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\inventory;
+namespace pocketmine\block\inventory\window;
 
-use pocketmine\inventory\SimpleInventory;
-use pocketmine\world\Position;
-
-class HopperInventory extends SimpleInventory implements BlockInventory{
-	use BlockInventoryTrait;
-
-	public function __construct(Position $holder, int $size = 5){
-		$this->holder = $holder;
-		parent::__construct($size);
-	}
+final class BrewingStandInventoryWindow extends BlockInventoryWindow{
+	public const SLOT_INGREDIENT = 0;
+	public const SLOT_BOTTLE_LEFT = 1;
+	public const SLOT_BOTTLE_MIDDLE = 2;
+	public const SLOT_BOTTLE_RIGHT = 3;
+	public const SLOT_FUEL = 4;
 }

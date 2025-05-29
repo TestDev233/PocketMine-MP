@@ -21,14 +21,31 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\inventory;
+namespace pocketmine\player;
 
-use pocketmine\world\Position;
+use pocketmine\inventory\Inventory;
 
-trait BlockInventoryTrait{
-	protected Position $holder;
+/**
+ * Window for player-owned inventories. The player can access these at all times.
+ */
+final class PlayerInventoryWindow extends InventoryWindow{
 
-	public function getHolder() : Position{
-		return $this->holder;
+	public const TYPE_INVENTORY = 0;
+	public const TYPE_OFFHAND = 1;
+	public const TYPE_ARMOR = 2;
+	public const TYPE_CURSOR = 3;
+	public const TYPE_CRAFTING = 4;
+
+	public function __construct(
+		Player $viewer,
+		Inventory $inventory,
+		private int $type
+	){
+		parent::__construct($viewer, $inventory);
 	}
+
+	/**
+	 * Returns the type of player inventory in this window.
+	 */
+	public function getType() : int{ return $this->type; }
 }

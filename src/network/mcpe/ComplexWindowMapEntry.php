@@ -21,28 +21,44 @@
 
 declare(strict_types=1);
 
-/**
- * Inventory related events
- */
-namespace pocketmine\event\inventory;
+namespace pocketmine\network\mcpe;
 
-use pocketmine\event\Event;
 use pocketmine\player\InventoryWindow;
-use pocketmine\player\Player;
 
-abstract class InventoryEvent extends Event{
-	public function __construct(
-		protected InventoryWindow $inventory
-	){}
-
-	public function getInventory() : InventoryWindow{
-		return $this->inventory;
-	}
+final class ComplexWindowMapEntry{
 
 	/**
-	 * @return Player[]
+	 * @var int[]
+	 * @phpstan-var array<int, int>
 	 */
-	public function getViewers() : array{
-		return $this->inventory->getInventory()->getViewers();
+	private array $reverseSlotMap = [];
+
+	/**
+	 * @param int[] $slotMap
+	 * @phpstan-param array<int, int> $slotMap
+	 */
+	public function __construct(
+		private InventoryWindow $inventory,
+		private array $slotMap
+	){
+		foreach($slotMap as $slot => $index){
+			$this->reverseSlotMap[$index] = $slot;
+		}
+	}
+
+	public function getWindow() : InventoryWindow{ return $this->inventory; }
+
+	/**
+	 * @return int[]
+	 * @phpstan-return array<int, int>
+	 */
+	public function getSlotMap() : array{ return $this->slotMap; }
+
+	public function mapNetToCore(int $slot) : ?int{
+		return $this->slotMap[$slot] ?? null;
+	}
+
+	public function mapCoreToNet(int $slot) : ?int{
+		return $this->reverseSlotMap[$slot] ?? null;
 	}
 }

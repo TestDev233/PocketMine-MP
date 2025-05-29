@@ -23,7 +23,11 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\block\inventory\window\BlockInventoryWindow;
+use pocketmine\block\inventory\window\DoubleChestInventoryWindow;
 use pocketmine\block\tile\Chest as TileChest;
+use pocketmine\block\utils\AnimatedContainer;
+use pocketmine\block\utils\AnimatedContainerTrait;
 use pocketmine\block\utils\FacesOppositePlacingPlayerTrait;
 use pocketmine\block\utils\SupportType;
 use pocketmine\event\block\ChestPairEvent;
@@ -31,9 +35,16 @@ use pocketmine\item\Item;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\BlockEventPacket;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\player\Player;
+use pocketmine\world\Position;
+use pocketmine\world\sound\ChestCloseSound;
+use pocketmine\world\sound\ChestOpenSound;
+use pocketmine\world\sound\Sound;
 
-class Chest extends Transparent{
+class Chest extends Transparent implements AnimatedContainer{
+	use AnimatedContainerTrait;
 	use FacesOppositePlacingPlayerTrait;
 
 	protected function recalculateCollisionBoxes() : array{
@@ -43,6 +54,25 @@ class Chest extends Transparent{
 
 	public function getSupportType(int $facing) : SupportType{
 		return SupportType::NONE;
+	}
+
+	/**
+	 * @phpstan-return array{bool, TileChest}|null
+	 */
+	private function locatePair(Position $position) : ?array{
+		$world = $position->getWorld();
+		$tile = $world->getTile($position);
+		if($tile instanceof TileChest){
+			foreach([false, true] as $clockwise){
+				$side = Facing::rotateY($this->facing, $clockwise);
+				$c = $position->getSide($side);
+				$pair = $world->getTile($c);
+				if($pair instanceof TileChest && $pair->isPaired() && $pair->getPair() === $tile){
+					return [$clockwise, $pair];
+				}
+			}
+		}
+		return null;
 	}
 
 	public function onPostPlace() : void{
@@ -71,18 +101,28 @@ class Chest extends Transparent{
 
 	public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null, array &$returnedItems = []) : bool{
 		if($player instanceof Player){
-
-			$chest = $this->position->getWorld()->getTile($this->position);
+			$world = $this->position->getWorld();
+			$chest = $world->getTile($this->position);
 			if($chest instanceof TileChest){
+				[$pairOnLeft, $pair] = $this->locatePair($this->position) ?? [false, null];
 				if(
 					!$this->getSide(Facing::UP)->isTransparent() ||
-					(($pair = $chest->getPair()) !== null && !$pair->getBlock()->getSide(Facing::UP)->isTransparent()) ||
+					($pair !== null && !$pair->getBlock()->getSide(Facing::UP)->isTransparent()) ||
 					!$chest->canOpenWith($item->getCustomName())
 				){
 					return true;
 				}
 
-				$player->setCurrentWindow($chest->getInventory());
+				if($pair !== null){
+					[$left, $right] = $pairOnLeft ? [$pair->getBlock(), $this] : [$this, $pair->getBlock()];
+
+					//TODO: we should probably construct DoubleChestInventory here directly too using the same logic
+					//right now it uses some weird logic in TileChest which produces incorrect results
+					//however I'm not sure if this is currently possible
+					$window = new DoubleChestInventoryWindow($player, $chest->getInventory(), $left->position, $right->position);
+				}
+
+				$player->setCurrentWindow($window ?? new BlockInventoryWindow($player, $chest->getInventory(), $this->position));
 			}
 		}
 
@@ -91,5 +131,31 @@ class Chest extends Transparent{
 
 	public function getFuelTime() : int{
 		return 300;
+	}
+
+	protected function getContainerOpenSound() : Sound{
+		return new ChestOpenSound();
+	}
+
+	protected function getContainerCloseSound() : Sound{
+		return new ChestCloseSound();
+	}
+
+	protected function doContainerAnimation(Position $position, bool $isOpen) : void{
+		//event ID is always 1 for a chest
+		//TODO: we probably shouldn't be sending a packet directly here, but it doesn't fit anywhere into existing systems
+		$position->getWorld()->broadcastPacketToViewers($position, BlockEventPacket::create(BlockPosition::fromVector3($position), 1, $isOpen ? 1 : 0));
+	}
+
+	protected function doContainerEffects(bool $isOpen) : void{
+		$this->doContainerAnimation($this->position, $isOpen);
+		$this->playContainerSound($this->position, $isOpen);
+
+		$pairInfo = $this->locatePair($this->position);
+		if($pairInfo !== null){
+			[, $pair] = $pairInfo;
+			$this->doContainerAnimation($pair->getPosition(), $isOpen);
+			$this->playContainerSound($pair->getPosition(), $isOpen);
+		}
 	}
 }

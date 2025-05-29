@@ -21,44 +21,39 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\network\mcpe;
+namespace pocketmine\block\inventory\window;
 
+use pocketmine\block\utils\AnimatedContainer;
 use pocketmine\inventory\Inventory;
+use pocketmine\player\InventoryWindow;
+use pocketmine\player\Player;
+use pocketmine\world\Position;
 
-final class ComplexInventoryMapEntry{
+class BlockInventoryWindow extends InventoryWindow{
 
-	/**
-	 * @var int[]
-	 * @phpstan-var array<int, int>
-	 */
-	private array $reverseSlotMap = [];
-
-	/**
-	 * @param int[] $slotMap
-	 * @phpstan-param array<int, int> $slotMap
-	 */
 	public function __construct(
-		private Inventory $inventory,
-		private array $slotMap
+		Player $viewer,
+		Inventory $inventory,
+		protected Position $holder
 	){
-		foreach($slotMap as $slot => $index){
-			$this->reverseSlotMap[$index] = $slot;
+		parent::__construct($viewer, $inventory);
+	}
+
+	public function getHolder() : Position{ return $this->holder; }
+
+	public function onOpen() : void{
+		parent::onOpen();
+		$block = $this->holder->getWorld()->getBlock($this->holder);
+		if($block instanceof AnimatedContainer){
+			$block->onContainerOpen();
 		}
 	}
 
-	public function getInventory() : Inventory{ return $this->inventory; }
-
-	/**
-	 * @return int[]
-	 * @phpstan-return array<int, int>
-	 */
-	public function getSlotMap() : array{ return $this->slotMap; }
-
-	public function mapNetToCore(int $slot) : ?int{
-		return $this->slotMap[$slot] ?? null;
-	}
-
-	public function mapCoreToNet(int $slot) : ?int{
-		return $this->reverseSlotMap[$slot] ?? null;
+	public function onClose() : void{
+		$block = $this->holder->getWorld()->getBlock($this->holder);
+		if($block instanceof AnimatedContainer){
+			$block->onContainerClose();
+		}
+		parent::onClose();
 	}
 }

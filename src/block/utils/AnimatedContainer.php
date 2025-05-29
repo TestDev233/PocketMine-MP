@@ -21,19 +21,18 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\inventory;
+namespace pocketmine\block\utils;
 
-use pocketmine\inventory\SimpleInventory;
-use pocketmine\inventory\TemporaryInventory;
-use pocketmine\world\Position;
+interface AnimatedContainer{
+	/**
+	 * Do actions when the container block is opened by a player.
+	 * If you have a custom viewer counter (like ender chests), you should increment it here.
+	 */
+	public function onContainerOpen() : void;
 
-class StonecutterInventory extends SimpleInventory implements BlockInventory, TemporaryInventory{
-	use BlockInventoryTrait;
-
-	public const SLOT_INPUT = 0;
-
-	public function __construct(Position $holder){
-		$this->holder = $holder;
-		parent::__construct(1);
-	}
+	/**
+	 * Do actions when the container block is closed by a player.
+	 * As above, you should decrement your custom viewer counter here, if you have one.
+	 */
+	public function onContainerClose() : void;
 }

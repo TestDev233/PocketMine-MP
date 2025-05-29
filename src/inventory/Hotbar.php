@@ -23,30 +23,30 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory;
 
-use pocketmine\entity\Human;
 use pocketmine\item\Item;
-use pocketmine\player\Player;
 use pocketmine\utils\ObjectSet;
 
-class PlayerInventory extends SimpleInventory{
-
-	protected Human $holder;
-	protected int $itemInHandIndex = 0;
+final class Hotbar{
+	protected int $selectedIndex = 0;
 
 	/**
 	 * @var \Closure[]|ObjectSet
 	 * @phpstan-var ObjectSet<\Closure(int $oldIndex) : void>
 	 */
-	protected ObjectSet $heldItemIndexChangeListeners;
+	protected ObjectSet $selectedIndexChangeListeners;
 
-	public function __construct(Human $player){
-		$this->holder = $player;
-		$this->heldItemIndexChangeListeners = new ObjectSet();
-		parent::__construct(36);
+	public function __construct(
+		private Inventory $inventory,
+		private int $size = 9
+	){
+		if($this->inventory->getSize() < $this->size){
+			throw new \InvalidArgumentException("Inventory size must be at least $this->size");
+		}
+		$this->selectedIndexChangeListeners = new ObjectSet();
 	}
 
 	public function isHotbarSlot(int $slot) : bool{
-		return $slot >= 0 && $slot < $this->getHotbarSize();
+		return $slot >= 0 && $slot < $this->getSize();
 	}
 
 	/**
@@ -54,7 +54,7 @@ class PlayerInventory extends SimpleInventory{
 	 */
 	private function throwIfNotHotbarSlot(int $slot) : void{
 		if(!$this->isHotbarSlot($slot)){
-			throw new \InvalidArgumentException("$slot is not a valid hotbar slot index (expected 0 - " . ($this->getHotbarSize() - 1) . ")");
+			throw new \InvalidArgumentException("$slot is not a valid hotbar slot index (expected 0 - " . ($this->getSize() - 1) . ")");
 		}
 	}
 
@@ -65,14 +65,14 @@ class PlayerInventory extends SimpleInventory{
 	 */
 	public function getHotbarSlotItem(int $hotbarSlot) : Item{
 		$this->throwIfNotHotbarSlot($hotbarSlot);
-		return $this->getItem($hotbarSlot);
+		return $this->inventory->getItem($hotbarSlot);
 	}
 
 	/**
 	 * Returns the hotbar slot number the holder is currently holding.
 	 */
-	public function getHeldItemIndex() : int{
-		return $this->itemInHandIndex;
+	public function getSelectedIndex() : int{
+		return $this->selectedIndex;
 	}
 
 	/**
@@ -82,13 +82,13 @@ class PlayerInventory extends SimpleInventory{
 	 *
 	 * @throws \InvalidArgumentException if the hotbar slot is out of range
 	 */
-	public function setHeldItemIndex(int $hotbarSlot) : void{
+	public function setSelectedIndex(int $hotbarSlot) : void{
 		$this->throwIfNotHotbarSlot($hotbarSlot);
 
-		$oldIndex = $this->itemInHandIndex;
-		$this->itemInHandIndex = $hotbarSlot;
+		$oldIndex = $this->selectedIndex;
+		$this->selectedIndex = $hotbarSlot;
 
-		foreach($this->heldItemIndexChangeListeners as $callback){
+		foreach($this->selectedIndexChangeListeners as $callback){
 			$callback($oldIndex);
 		}
 	}
@@ -97,30 +97,26 @@ class PlayerInventory extends SimpleInventory{
 	 * @return \Closure[]|ObjectSet
 	 * @phpstan-return ObjectSet<\Closure(int $oldIndex) : void>
 	 */
-	public function getHeldItemIndexChangeListeners() : ObjectSet{ return $this->heldItemIndexChangeListeners; }
+	public function getSelectedIndexChangeListeners() : ObjectSet{ return $this->selectedIndexChangeListeners; }
 
 	/**
 	 * Returns the currently-held item.
 	 */
-	public function getItemInHand() : Item{
-		return $this->getHotbarSlotItem($this->itemInHandIndex);
+	public function getHeldItem() : Item{
+		return $this->getHotbarSlotItem($this->selectedIndex);
 	}
 
 	/**
 	 * Sets the item in the currently-held slot to the specified item.
 	 */
-	public function setItemInHand(Item $item) : void{
-		$this->setItem($this->getHeldItemIndex(), $item);
+	public function setHeldItem(Item $item) : void{
+		$this->inventory->setItem($this->getSelectedIndex(), $item);
 	}
 
 	/**
 	 * Returns the number of slots in the hotbar.
 	 */
-	public function getHotbarSize() : int{
-		return 9;
-	}
-
-	public function getHolder() : Human{
-		return $this->holder;
+	public function getSize() : int{
+		return $this->size;
 	}
 }

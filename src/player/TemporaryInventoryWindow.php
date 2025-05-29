@@ -21,17 +21,8 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block\inventory;
+namespace pocketmine\player;
 
-use pocketmine\inventory\SimpleInventory;
-use pocketmine\inventory\TemporaryInventory;
-use pocketmine\world\Position;
+interface TemporaryInventoryWindow{
 
-final class CartographyTableInventory extends SimpleInventory implements BlockInventory, TemporaryInventory{
-	use BlockInventoryTrait;
-
-	public function __construct(Position $holder){
-		$this->holder = $holder;
-		parent::__construct(2);
-	}
 }

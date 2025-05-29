@@ -23,7 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\block\inventory\AnvilInventory;
+use pocketmine\block\inventory\window\AnvilInventoryWindow;
 use pocketmine\block\utils\Fallable;
 use pocketmine\block\utils\FallableTrait;
 use pocketmine\block\utils\HorizontalFacingTrait;
@@ -80,7 +80,7 @@ class Anvil extends Transparent implements Fallable{
 
 	public function onInteract(Item $item, int $face, Vector3 $clickVector, ?Player $player = null, array &$returnedItems = []) : bool{
 		if($player instanceof Player){
-			$player->setCurrentWindow(new AnvilInventory($this->position));
+			$player->setCurrentWindow(new AnvilInventoryWindow($player, $this->position));
 		}
 
 		return true;

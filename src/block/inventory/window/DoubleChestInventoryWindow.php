@@ -21,18 +21,24 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\inventory;
+namespace pocketmine\block\inventory\window;
 
+use pocketmine\inventory\Inventory;
 use pocketmine\player\Player;
+use pocketmine\world\Position;
 
-class PlayerCursorInventory extends SimpleInventory implements TemporaryInventory{
+final class DoubleChestInventoryWindow extends BlockInventoryWindow{
+
 	public function __construct(
-		protected Player $holder
+		Player $viewer,
+		Inventory $inventory,
+		private Position $left,
+		private Position $right
 	){
-		parent::__construct(1);
+		parent::__construct($viewer, $inventory, $this->left);
 	}
 
-	public function getHolder() : Player{
-		return $this->holder;
-	}
+	public function getLeft() : Position{ return $this->left; }
+
+	public function getRight() : Position{ return $this->right; }
 }
