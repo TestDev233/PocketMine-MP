@@ -141,7 +141,7 @@ abstract class Living extends Entity{
 
 	public function getGravity() : float{
 		if($this->effectManager->has(VanillaEffects::SLOW_FALLING())){
-			return VanillaEffects::SLOW_FALLING()->getGravity();
+			return 0.01;
 		}
 		return parent::getGravity();
 	}

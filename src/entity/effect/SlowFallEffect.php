@@ -27,10 +27,6 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
 
 class SlowFallEffect extends Effect{
-	public function getGravity() : float{
-		return 0.01;
-	}
-
 	public function canTick(EffectInstance $instance) : bool{
 		return true;
 	}
