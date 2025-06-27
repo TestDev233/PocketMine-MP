@@ -146,7 +146,15 @@ abstract class Living extends Entity{
 		return parent::getGravity();
 	}
 
-	abstract public function getName() : string;
+	protected function applyDragBeforeGravity(): bool
+	{
+		if($this->effectManager->has(VanillaEffects::SLOW_FALLING())){
+			return false;
+		}
+		return parent::applyDragBeforeGravity();
+	}
+
+    abstract public function getName() : string;
 
 	public function canBeRenamed() : bool{
 		return true;
