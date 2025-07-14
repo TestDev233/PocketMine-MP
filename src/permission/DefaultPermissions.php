@@ -114,5 +114,36 @@ abstract class DefaultPermissions{
 		self::registerPermission(new Permission(Names::COMMAND_WHITELIST_REMOVE, l10n::pocketmine_permission_command_whitelist_remove()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_XP_OTHER, l10n::pocketmine_permission_command_xp_other()), [$operatorRoot]);
 		self::registerPermission(new Permission(Names::COMMAND_XP_SELF, l10n::pocketmine_permission_command_xp_self()), [$operatorRoot]);
+
+		self::registerPermission(new Permission(Names::GAME_CHAT, "Allows the user to chat"), [$everyoneRoot]);
+		self::registerPermission(new Permission(Names::GAME_EMOTE, "Allows the user to emote"), [$everyoneRoot]);
+
+		$survivalRoot = self::registerPermission(new Permission(Names::GROUP_GAMEMODE_SURVIVAL));
+		$creativeRoot = self::registerPermission(new Permission(Names::GROUP_GAMEMODE_CREATIVE));
+		$adventureRoot = self::registerPermission(new Permission(Names::GROUP_GAMEMODE_ADVENTURE));
+		$spectatorRoot = self::registerPermission(new Permission(Names::GROUP_GAMEMODE_SPECTATOR));
+
+		self::registerPermission(new Permission(Names::GAME_BLOCK_INTERACT, "Allows the user to interact with blocks"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_BLOCK_MINE, "Allows the user to mine blocks"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_BLOCK_PLACE, "Allows the user to place blocks"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_ENTITY_ATTACK, "Allows the user to attack entities"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_ENTITY_INTERACT, "Allows the user to interact with entities"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_ITEM_DROP, "Allows the user to drop items"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_ITEM_PICKUP, "Allows the user to pick up items"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_ITEM_USE, "Allows the user to use items such as snowballs"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_PLAYER_ATTACK, "Allows the user to attack other players"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+		self::registerPermission(new Permission(Names::GAME_PLAYER_INTERACT, "Allows the user to interact with other players"), [$survivalRoot, $creativeRoot, $adventureRoot]);
+
+		//TODO: maybe we should add deny inherits for the adventure group for these, instead of just granting them to the survival and creative groups
+		//we'll end up needing to add these to new game modes if they are added
+		self::registerPermission(new Permission(Names::GAME_ITEM_BYPASS_CANDESTROY, "Allows the user to bypass CanDestroy item restrictions when mining blocks"), [$survivalRoot, $creativeRoot]);
+		self::registerPermission(new Permission(Names::GAME_ITEM_BYPASS_CANPLACEON, "Allows the user to bypass CanPlaceOn item restrictions when placing blocks"), [$survivalRoot, $creativeRoot]);
+
+		self::registerPermission(new Permission(Names::GAME_BLOCK_DELETE, "Allows the user to delete any block without delay, including indestructible blocks"), [$creativeRoot]);
+		self::registerPermission(new Permission(Names::GAME_ITEM_CREATE, "Allows the user to use the creative inventory"), [$creativeRoot]);
+		self::registerPermission(new Permission(Names::GAME_FLIGHT, "Allows the user to toggle flight mode"), [$creativeRoot]);
+
+		self::registerPermission(new Permission(Names::GAME_NOCOLLISION, "Allows the user to pass through blocks"), [$spectatorRoot]);
+		self::registerPermission(new Permission(Names::GAME_INVULNERABLE, "Allows the user to ignore all incoming damage (except suicide)"), [$creativeRoot, $spectatorRoot]);
 	}
 }
