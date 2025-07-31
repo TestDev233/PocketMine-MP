@@ -45,7 +45,9 @@ use pocketmine\world\particle\HugeExplodeSeedParticle;
 use pocketmine\world\sound\ExplodeSound;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\utils\SubChunkExplorerStatus;
+use function array_fill_keys;
 use function ceil;
+use function count;
 use function floor;
 use function min;
 use function mt_rand;
@@ -68,11 +70,22 @@ class Explosion{
 
 	private SubChunkExplorer $subChunkExplorer;
 
+	/**
+	 * @var true[] excludedBlockTypeIds => dummy
+	 * @phpstan-var array<int, true>
+	 */
+	private array $excludedBlockTypeIds = [];
+
+	/**
+	 * @param int[] $excludedBlockTypeIds
+	 * @phpstan-param array<int> $excludedBlockTypeIds
+	 */
 	public function __construct(
 		public Position $source,
 		public float $radius,
 		private Entity|Block|null $what = null,
-		private float $fireChance = 0.0
+		private float $fireChance = 0,
+		array $excludedBlockTypeIds = []
 	){
 		if(!$this->source->isValid()){
 			throw new \InvalidArgumentException("Position does not have a valid world");
@@ -86,6 +99,8 @@ class Explosion{
 			throw new \InvalidArgumentException("Explosion radius must be greater than 0, got $radius");
 		}
 		$this->subChunkExplorer = new SubChunkExplorer($this->world);
+
+		$this->excludedBlockTypeIds = array_fill_keys($excludedBlockTypeIds, true);
 	}
 
 	/**
@@ -135,7 +150,15 @@ class Explosion{
 
 							$state = $subChunk->getBlockStateId($vBlockX & SubChunk::COORD_MASK, $vBlockY & SubChunk::COORD_MASK, $vBlockZ & SubChunk::COORD_MASK);
 
+							if(count($this->excludedBlockTypeIds) > 0){
+								$typeId = $blockFactory->fromStateId($state)->getTypeId();
+								if(isset($this->excludedBlockTypeIds[$typeId])){
+									continue;
+								}
+							}
+
 							$blastResistance = $blockFactory->blastResistance[$state] ?? 0;
+
 							if($blastResistance >= 0){
 								$blastForce -= ($blastResistance / 5 + 0.3) * $this->stepLen;
 								if($blastForce > 0){
