@@ -29,6 +29,7 @@ use pocketmine\block\TNT;
 use pocketmine\block\utils\SupportType;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\Entity;
+use pocketmine\entity\object\PrimedTNT;
 use pocketmine\event\block\BlockExplodeEvent;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -45,7 +46,9 @@ use pocketmine\world\particle\HugeExplodeSeedParticle;
 use pocketmine\world\sound\ExplodeSound;
 use pocketmine\world\utils\SubChunkExplorer;
 use pocketmine\world\utils\SubChunkExplorerStatus;
+use function array_fill_keys;
 use function ceil;
+use function count;
 use function floor;
 use function min;
 use function mt_rand;
@@ -53,6 +56,7 @@ use function sqrt;
 
 class Explosion{
 	public const DEFAULT_FIRE_CHANCE = 1.0 / 3.0;
+	public const UNDERWATER_TNT_Y_OFFSET = 0.06125;
 
 	private int $rays = 16;
 	public World $world;
@@ -68,11 +72,22 @@ class Explosion{
 
 	private SubChunkExplorer $subChunkExplorer;
 
+	/**
+	 * @var true[]
+	 * @phpstan-var array<int, true>
+	 */
+	private array $excludedBlockTypeIds = [];
+
+	/**
+	 * @param int[] $excludedBlockTypeIds
+	 * @phpstan-param array<int, int> $excludedBlockTypeIds
+	 */
 	public function __construct(
 		public Position $source,
 		public float $radius,
 		private Entity|Block|null $what = null,
-		private float $fireChance = 0.0
+		private float $fireChance = 0.0,
+		array $excludedBlockTypeIds = []
 	){
 		if(!$this->source->isValid()){
 			throw new \InvalidArgumentException("Position does not have a valid world");
@@ -86,6 +101,14 @@ class Explosion{
 			throw new \InvalidArgumentException("Explosion radius must be greater than 0, got $radius");
 		}
 		$this->subChunkExplorer = new SubChunkExplorer($this->world);
+
+		$this->excludedBlockTypeIds = array_fill_keys($excludedBlockTypeIds, true);
+
+		if($this->what instanceof PrimedTNT || $this->what instanceof TNT){
+			if($this->what->worksUnderwater()){
+				$this->source->y += self::UNDERWATER_TNT_Y_OFFSET;
+			}
+		}
 	}
 
 	/**
@@ -134,6 +157,9 @@ class Explosion{
 							}
 
 							$state = $subChunk->getBlockStateId($vBlockX & SubChunk::COORD_MASK, $vBlockY & SubChunk::COORD_MASK, $vBlockZ & SubChunk::COORD_MASK);
+							if(count($this->excludedBlockTypeIds) > 0 && isset($this->excludedBlockTypeIds[$blockFactory->fromStateId($state)->getTypeId()])){
+								continue;
+							}
 
 							$blastResistance = $blockFactory->blastResistance[$state] ?? 0;
 							if($blastResistance >= 0){
