@@ -75,6 +75,7 @@ use pocketmine\utils\Utils;
 use function array_shift;
 use function array_values;
 use function count;
+use function explode;
 use function implode;
 use function str_contains;
 use function strcasecmp;
@@ -207,16 +208,15 @@ class SimpleCommandMap implements CommandMap{
 	}
 
 	public function dispatch(CommandSender $sender, string $commandLine) : bool{
-		$args = CommandStringHelper::parseQuoteAware($commandLine);
-
-		$sentCommandLabel = array_shift($args);
-		if($sentCommandLabel !== null && ($target = $this->getCommand($sentCommandLabel)) !== null){
+		$parts = explode(" ", $commandLine, 2);
+		$sentCommandLabel = $parts[0];
+		if(($target = $this->getCommand($sentCommandLabel)) !== null){
 			$timings = Timings::getCommandDispatchTimings($target->getLabel());
 			$timings->startTiming();
 
 			try{
 				if($target->testPermission($sender)){
-					$target->execute($sender, $sentCommandLabel, $args);
+					$target->executeRaw($sender, $sentCommandLabel, trim($parts[1] ?? ""));
 				}
 			}catch(InvalidCommandSyntaxException $e){
 				$sender->sendMessage($sender->getLanguage()->translate(KnownTranslationFactory::commands_generic_usage($target->getUsage())));
@@ -226,7 +226,7 @@ class SimpleCommandMap implements CommandMap{
 			return true;
 		}
 
-		$sender->sendMessage(KnownTranslationFactory::pocketmine_command_notFound($sentCommandLabel ?? "", "/help")->prefix(TextFormat::RED));
+		$sender->sendMessage(KnownTranslationFactory::pocketmine_command_notFound($sentCommandLabel, "/help")->prefix(TextFormat::RED));
 		return false;
 	}
 
