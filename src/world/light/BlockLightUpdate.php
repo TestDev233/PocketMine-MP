@@ -65,13 +65,18 @@ class BlockLightUpdate extends LightUpdate{
 		foreach($chunk->getSubChunks() as $subChunkY => $subChunk){
 			$subChunk->setBlockLightArray(LightArray::fill(0));
 
-			foreach($subChunk->getBlockLayers() as $layer){
+			$hasLightEmitter = false;
+			foreach([$subChunk->getBlockLayer(), $subChunk->getLiquidLayer()] as $layer){
 				foreach($layer->getPalette() as $state){
 					if(($this->lightEmitters[$state] ?? 0) > 0){
-						$lightSources += $this->scanForLightEmittingBlocks($subChunk, $chunkX << SubChunk::COORD_BIT_SIZE, $subChunkY << SubChunk::COORD_BIT_SIZE, $chunkZ << SubChunk::COORD_BIT_SIZE);
+						$hasLightEmitter = true;
 						break 2;
 					}
 				}
+			}
+
+			if($hasLightEmitter){
+				$lightSources += $this->scanForLightEmittingBlocks($subChunk, $chunkX << SubChunk::COORD_BIT_SIZE, $subChunkY << SubChunk::COORD_BIT_SIZE, $chunkZ << SubChunk::COORD_BIT_SIZE);
 			}
 		}
 
