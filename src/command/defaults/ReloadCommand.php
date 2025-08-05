@@ -6,7 +6,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\lang\KnownTranslationFactory;
-use pocketmine\permission\DefaultPermissionNames;
+use pocketmine\permission\DefaultPermissions;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginManager;
@@ -25,7 +25,7 @@ class ReloadCommand extends VanillaCommand {
             KnownTranslationFactory::pocketmine_command_reload_description(),
             "/reload [config <ops|bans|ip-bans|server>|plugin <name>]"
         );
-        $this->setPermission(DefaultPermissionNames::COMMAND_RELOAD);
+        $this->setPermission(DefaultPermissions::COMMAND_RELOAD);
     }
 
     public function execute(CommandSender $sender, string $label, array $args) : bool {
@@ -39,20 +39,7 @@ class ReloadCommand extends VanillaCommand {
         if (count($args) === 0) {
             $sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations and plugins...");
 
-            $server->reloadConfig();
-            $server->reloadWhitelist();
-            $server->reloadOps();
-            $server->getNameBans()->load();
-            $server->getIPBans()->load();
-
-            $pluginManager->disablePlugins();
-            $pluginManager->enablePlugins(PluginManager::STARTUP);
-
-            foreach ($pluginManager->getPlugins() as $plugin) {
-                if ($plugin instanceof PluginBase) {
-                    $plugin->onReload();
-                }
-            }
+            $server->reload();
 
             $sender->sendMessage(TextFormat::GREEN . "All configurations and plugins have been reloaded.");
             return true;
@@ -67,19 +54,19 @@ class ReloadCommand extends VanillaCommand {
 
                 switch (strtolower($args[1])) {
                     case "ops":
-                        $server->reloadOps();
+                        $server->getOps()->reload();
                         $sender->sendMessage(TextFormat::GREEN . "Reloaded ops.");
                         break;
                     case "bans":
-                        $server->getNameBans()->load();
+                        $server->getNameBans()->reload();
                         $sender->sendMessage(TextFormat::GREEN . "Reloaded name bans.");
                         break;
                     case "ip-bans":
-                        $server->getIPBans()->load();
+                        $server->getIPBans()->reload();
                         $sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
                         break;
                     case "server":
-                        $server->reloadConfig();
+                        $server->getConfig()->reload();
                         $sender->sendMessage(TextFormat::GREEN . "Reloaded server configuration.");
                         break;
                     default:
@@ -100,10 +87,6 @@ class ReloadCommand extends VanillaCommand {
                 if ($plugin instanceof Plugin) {
                     $pluginManager->disablePlugin($plugin);
                     $pluginManager->enablePlugin($plugin);
-
-                    if ($plugin instanceof PluginBase) {
-                        $plugin->onReload();
-                    }
 
                     $sender->sendMessage(TextFormat::GREEN . "Reloaded plugin: " . TextFormat::YELLOW . $plugin->getName());
                 } else {
