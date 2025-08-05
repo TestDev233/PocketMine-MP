@@ -25,6 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\Server;
+use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use function count;
 use function strtolower;
@@ -122,7 +123,6 @@ class ReloadCommand extends VanillaCommand{
 		$sender->sendMessage(TextFormat::YELLOW . "/reload config <ops|bans|ip-bans|server>");
 		$sender->sendMessage(TextFormat::YELLOW . "/reload plugin <plugin_name>");
 		$sender->sendMessage(TextFormat::YELLOW . "/reload all");
-		$sender->sendMessage(TextFormat::RED . "Plugin reloading is no longer supported. Please restart the server.");
 		return true;
 	}
 }
