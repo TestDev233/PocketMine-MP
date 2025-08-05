@@ -14,9 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository with submodules
+      - name: Checkout TestDev233/PocketMine-MP repository with submodules
         uses: actions/checkout@v4
         with:
+          repository: TestDev233/PocketMine-MP
           submodules: true
 
       - name: Setup PHP
