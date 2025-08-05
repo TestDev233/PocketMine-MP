@@ -51,7 +51,7 @@ class ReloadCommand extends VanillaCommand{
 				}
 			}
 
-			$sender->sendMessage(TextFormat::GREEN . "All plugins have been restarted.");
+			$sender->sendMessage(TextFormat::GREEN . "All plugins have been restarted");
 			return true;
 		}
 
