@@ -101,7 +101,7 @@ abstract class PluginBase implements Plugin, CommandExecutor{
 	protected function onDisable() : void{
 
 	}
-	
+
 	/**	
 	 * Called when this plugin is reloaded using /reload or programmatically.
 	 */
