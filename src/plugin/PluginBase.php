@@ -101,8 +101,9 @@ abstract class PluginBase implements Plugin, CommandExecutor{
 
 	}
 
-	/**	
-	 * Called when this plugin is reloaded using /reload or programmatically.
+	/**
+	 * Called when the plugin is disabled
+	 * Use this to free open things and finish actions
 	 */
 	protected function onReload() : void{
 
