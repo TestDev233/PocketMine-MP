@@ -42,9 +42,9 @@ class ReloadCommand extends VanillaCommand{
 
 		if(count($args) === 0){
 			$sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations...");
-			$server->getOps()->load($server->getDataPath() . "ops.json");
-			$server->getNameBans()->load($server->getDataPath() . "banned-players.json");
-			$server->getIPBans()->load($server->getDataPath() . "banned-ips.json");
+			$server->getOps()->load();
+			$server->getNameBans()->load();
+			$server->getIPBans()->load();
 			$sender->sendMessage(TextFormat::GREEN . "All configurations have been reloaded.");
 			return true;
 		}
@@ -57,15 +57,15 @@ class ReloadCommand extends VanillaCommand{
 
 			switch(strtolower($args[1])){
 				case "ops":
-					$server->getOps()->load($server->getDataPath() . "ops.json");
+					$server->getOps()->load();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded ops.");
 					break;
 				case "bans":
-					$server->getNameBans()->load($server->getDataPath() . "banned-players.json");
+					$server->getNameBans()->load();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded name bans.");
 					break;
 				case "ip-bans":
-					$server->getIPBans()->load($server->getDataPath() . "banned-ips.json");
+					$server->getIPBans()->load();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
 					break;
 				case "server":
