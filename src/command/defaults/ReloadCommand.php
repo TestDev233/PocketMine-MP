@@ -17,9 +17,9 @@ use function count;
 use function implode;
 use function strtolower;
 
-class ReloadCommand extends VanillaCommand{
+class ReloadCommand extends VanillaCommand {
 
-    public function __construct(){
+    public function __construct() {
         parent::__construct(
             "reload",
             KnownTranslationFactory::pocketmine_command_reload_description(),
@@ -28,15 +28,15 @@ class ReloadCommand extends VanillaCommand{
         $this->setPermission(DefaultPermissionNames::COMMAND_RELOAD);
     }
 
-    public function execute(CommandSender $sender, string $label, array $args) : bool{
-        if(!$this->testPermission($sender)){
+    public function execute(CommandSender $sender, string $label, array $args) : bool {
+        if (!$this->testPermission($sender)) {
             return true;
         }
 
         $server = Server::getInstance();
         $pluginManager = $server->getPluginManager();
 
-        if(count($args) === 0){
+        if (count($args) === 0) {
             $sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations and plugins...");
 
             $server->reloadConfig();
@@ -48,8 +48,8 @@ class ReloadCommand extends VanillaCommand{
             $pluginManager->disablePlugins();
             $pluginManager->enablePlugins(PluginManager::STARTUP);
 
-            foreach($pluginManager->getPlugins() as $plugin){
-                if($plugin instanceof PluginBase){
+            foreach ($pluginManager->getPlugins() as $plugin) {
+                if ($plugin instanceof PluginBase) {
                     $plugin->onReload();
                 }
             }
@@ -58,14 +58,14 @@ class ReloadCommand extends VanillaCommand{
             return true;
         }
 
-        switch(strtolower($args[0])){
+        switch (strtolower($args[0])) {
             case "config":
-                if(!isset($args[1])){
+                if (!isset($args[1])) {
                     $sender->sendMessage(TextFormat::RED . "Usage: /reload config <ops|bans|ip-bans|server>");
                     return true;
                 }
 
-                switch(strtolower($args[1])){
+                switch (strtolower($args[1])) {
                     case "ops":
                         $server->reloadOps();
                         $sender->sendMessage(TextFormat::GREEN . "Reloaded ops.");
@@ -89,7 +89,7 @@ class ReloadCommand extends VanillaCommand{
                 return true;
 
             case "plugin":
-                if(!isset($args[1])){
+                if (!isset($args[1])) {
                     $sender->sendMessage(TextFormat::RED . "Usage: /reload plugin <pluginName>");
                     return true;
                 }
@@ -97,25 +97,25 @@ class ReloadCommand extends VanillaCommand{
                 $pluginName = implode(" ", array_slice($args, 1));
                 $plugin = $pluginManager->getPlugin($pluginName);
 
-                if($plugin instanceof Plugin){
+                if ($plugin instanceof Plugin) {
                     $pluginManager->disablePlugin($plugin);
                     $pluginManager->enablePlugin($plugin);
 
-                    if($plugin instanceof PluginBase){
+                    if ($plugin instanceof PluginBase) {
                         $plugin->onReload();
                     }
 
                     $sender->sendMessage(TextFormat::GREEN . "Reloaded plugin: " . TextFormat::YELLOW . $plugin->getName());
-                }else{
+                } else {
                     $sender->sendMessage(TextFormat::RED . "Plugin \"$pluginName\" not found.");
                 }
                 return true;
 
             default:
                 $sender->sendMessage(TextFormat::RED . "Unknown subcommand. Use:");
-                $sender->sendMessage("/reload");
-                $sender->sendMessage("/reload config <ops|bans|ip-bans|server>");
-                $sender->sendMessage("/reload plugin <pluginName>");
+                $sender->sendMessage(TextFormat::YELLOW . "/reload");
+                $sender->sendMessage(TextFormat::YELLOW . "/reload config <ops|bans|ip-bans|server>");
+                $sender->sendMessage(TextFormat::YELLOW . "/reload plugin <pluginName>");
                 return true;
         }
     }
