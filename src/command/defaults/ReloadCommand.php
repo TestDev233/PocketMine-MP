@@ -6,7 +6,7 @@
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -42,11 +42,10 @@ class ReloadCommand extends VanillaCommand{
 
 		if(count($args) === 0){
 			$sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations...");
-			$server->getOps()->reload();
-			$server->getNameBans()->reload();
-			$server->getIPBans()->reload();
+			$server->getOps()->load();
+			$server->getNameBans()->load();
+			$server->getIPBans()->load();
 			$sender->sendMessage(TextFormat::GREEN . "All configurations have been reloaded.");
-			$sender->sendMessage(TextFormat::YELLOW . "Plugin reloading is no longer officially supported. Please restart the server or use '/reload all' if you modified the core engine.");
 			return true;
 		}
 
@@ -58,15 +57,15 @@ class ReloadCommand extends VanillaCommand{
 
 			switch(strtolower($args[1])){
 				case "ops":
-					$server->getOps()->reload();
+					$server->getOps()->load();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded ops.");
 					break;
 				case "bans":
-					$server->getNameBans()->reload();
+					$server->getNameBans()->load();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded name bans.");
 					break;
 				case "ip-bans":
-					$server->getIPBans()->reload();
+					$server->getIPBans()->load();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
 					break;
 				case "server":
