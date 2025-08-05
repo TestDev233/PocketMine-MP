@@ -22,8 +22,8 @@ class ReloadCommand extends VanillaCommand{
 
         if(count($args) === 0){
             $sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations...");
-            $server->getOps()->reload();
-            $server->getIPBans()->reload();
+            $server->getOps()->load();
+            $server->getIPBans()->load();
             $sender->sendMessage(TextFormat::GREEN . "All configurations have been reloaded.");
             return true;
         }
@@ -36,11 +36,11 @@ class ReloadCommand extends VanillaCommand{
 
             switch(strtolower($args[1])){
                 case "ops":
-                    $server->getOps()->reload();
+                    $server->getOps()->load();
                     $sender->sendMessage(TextFormat::GREEN . "Reloaded ops.");
                     break;
                 case "ip-bans":
-                    $server->getIPBans()->reload();
+                    $server->getIPBans()->load();
                     $sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
                     break;
                 case "server":
