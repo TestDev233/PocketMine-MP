@@ -36,7 +36,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --no-dev --no-progress --prefer-dist
+        run: composer install --no-dev --no-progress --prefer-dist --ignore-platform-reqs
 
       - name: Build PocketMine-MP
         run: php build/make.php --make
