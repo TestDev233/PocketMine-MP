@@ -508,7 +508,7 @@ class PluginManager{
 		}
 	}
 
-	private function disablePlugin(Plugin $plugin) : void{
+	public function disablePlugin(Plugin $plugin) : void{
 		if($plugin->isEnabled()){
 			$this->server->getLogger()->info($this->server->getLanguage()->translate(KnownTranslationFactory::pocketmine_plugin_disable($plugin->getDescription()->getFullName())));
 			(new PluginDisableEvent($plugin))->call();
