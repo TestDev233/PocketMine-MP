@@ -24,7 +24,6 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\permission\DefaultPermissions;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use function count;
@@ -32,17 +31,9 @@ use function strtolower;
 
 class ReloadCommand extends VanillaCommand{
 
-	public function __construct(){
-		parent::__construct(
-			"reload",
-			"Reloads the server configuration, or a specific configuration file.",
-			"/reload [config <ops|bans|ip-bans|server>]"
-		);
-		$this->setPermission(DefaultPermissions::COMMAND_RELOAD);
-	}
-
 	public function execute(CommandSender $sender, string $label, array $args) : bool{
-		if(!$this->testPermission($sender)){
+		if(!$sender->hasPermission("pocketmine.command.reload")){
+			$sender->sendMessage(TextFormat::RED . "You do not have permission to use this command.");
 			return true;
 		}
 
@@ -50,7 +41,7 @@ class ReloadCommand extends VanillaCommand{
 
 		if(count($args) === 0){
 			$sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations...");
-			$server->getAsyncConfig()->reload();
+			$server->getConfig()->reload();
 			$server->getOps()->reload();
 			$server->getNameBans()->reload();
 			$server->getIPBans()->reload();
@@ -78,7 +69,7 @@ class ReloadCommand extends VanillaCommand{
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
 					break;
 				case "server":
-					$server->getAsyncConfig()->reload();
+					$server->getConfig()->reload();
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded server configuration.");
 					break;
 				default:
