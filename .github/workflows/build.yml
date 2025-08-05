@@ -3,10 +3,10 @@ name: Build PocketMine-MP
 on:
   push:
     branches:
-      - main
+      - command-alias-handling
   pull_request:
     branches:
-      - main
+      - command-alias-handling
   workflow_dispatch:
 
 jobs:
@@ -14,11 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout TestDev233/PocketMine-MP repository with submodules
-        uses: actions/checkout@v4
-        with:
-          repository: TestDev233/PocketMine-MP
-          submodules: true
+      - name: Clone repository
+        run: git clone https://github.com/TestDev233/PocketMine-MP
+      
+      - name: Update submodules
+        run: git submodule update --init --recursive
+        working-directory: ./PocketMine-MP
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -35,17 +36,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('PocketMine-MP/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
         run: composer install --no-dev --no-progress --prefer-dist --ignore-platform-reqs
+        working-directory: ./PocketMine-MP
 
       - name: Build PocketMine-MP
         run: composer make-server
+        working-directory: ./PocketMine-MP
 
       - name: Upload PocketMine-MP artifact
         uses: actions/upload-artifact@v4
         with:
           name: PocketMine-MP.phar
-          path: PocketMine-MP.phar
+          path: PocketMine-MP/PocketMine-MP.phar
