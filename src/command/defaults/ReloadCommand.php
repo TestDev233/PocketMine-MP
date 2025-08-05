@@ -6,7 +6,7 @@
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\__|_|   |_|_| |_|\__|_|_|_|\___|     |_|  |_|_|
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -69,7 +69,7 @@ class ReloadCommand extends VanillaCommand{
 					$sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
 					break;
 				case "server":
-					$sender->sendMessage(TextFormat::GREEN . "Reloaded server configuration.");
+					$sender->sendMessage(TextFormat::RED . "Server configuration cannot be reloaded without a server restart.");
 					break;
 				default:
 					$sender->sendMessage(TextFormat::RED . "Unknown config type. Use: ops, bans, ip-bans, server.");
