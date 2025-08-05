@@ -20,39 +20,22 @@ class ReloadCommand extends VanillaCommand{
 
         $server = Server::getInstance();
 
-        if(count($args) === 0){
-            $sender->sendMessage(TextFormat::YELLOW . "Reloading all configurations...");
-            $server->getOps()->load();
-            $server->getIPBans()->load();
-            $sender->sendMessage(TextFormat::GREEN . "All configurations have been reloaded.");
+        if(count($args) === 0 || strtolower($args[0]) === "all"){
+            $sender->sendMessage(TextFormat::YELLOW . "Restarting all plugins...");
+            
+            $pluginManager = $server->getPluginManager();
+            $plugins = $pluginManager->getPlugins();
+            foreach($plugins as $plugin){
+                if($plugin->isEnabled()){
+                    $pluginManager->disablePlugin($plugin);
+                    $pluginManager->enablePlugin($plugin);
+                }
+            }
+            
+            $sender->sendMessage(TextFormat::GREEN . "All plugins have been restarted.");
             return true;
         }
 
-        if(strtolower($args[0]) === "config"){
-            if(!isset($args[1])){
-                $sender->sendMessage(TextFormat::RED . "Usage: /reload config <ops|ip-bans|server>");
-                return true;
-            }
-
-            switch(strtolower($args[1])){
-                case "ops":
-                    $server->getOps()->load();
-                    $sender->sendMessage(TextFormat::GREEN . "Reloaded ops.");
-                    break;
-                case "ip-bans":
-                    $server->getIPBans()->load();
-                    $sender->sendMessage(TextFormat::GREEN . "Reloaded IP bans.");
-                    break;
-                case "server":
-                    $sender->sendMessage(TextFormat::RED . "Server configuration cannot be reloaded without a server restart.");
-                    break;
-                default:
-                    $sender->sendMessage(TextFormat::RED . "Unknown config type. Use: ops, ip-bans, server.");
-                    break;
-            }
-            return true;
-        }
-        
         if(strtolower($args[0]) === "plugin"){
             if(!isset($args[1])){
                 $sender->sendMessage(TextFormat::RED . "Usage: /reload plugin <plugin_name>");
@@ -77,27 +60,9 @@ class ReloadCommand extends VanillaCommand{
             return true;
         }
         
-        if(strtolower($args[0]) === "all"){
-            $sender->sendMessage(TextFormat::YELLOW . "Restarting all plugins...");
-            
-            $pluginManager = $server->getPluginManager();
-            $plugins = $pluginManager->getPlugins();
-            foreach($plugins as $plugin){
-                if($plugin->isEnabled()){
-                    $pluginManager->disablePlugin($plugin);
-                    $pluginManager->enablePlugin($plugin);
-                }
-            }
-            
-            $sender->sendMessage(TextFormat::GREEN . "All plugins have been restarted.");
-            return true;
-        }
-
         $sender->sendMessage(TextFormat::RED . "Unknown subcommand. Use:");
-        $sender->sendMessage(TextFormat::YELLOW . "/reload");
-        $sender->sendMessage(TextFormat::YELLOW . "/reload config <ops|bans|ip-bans|server>");
+        $sender->sendMessage(TextFormat::YELLOW . "/reload [all]");
         $sender->sendMessage(TextFormat::YELLOW . "/reload plugin <plugin_name>");
-        $sender->sendMessage(TextFormat::YELLOW . "/reload all");
         return true;
     }
 }
