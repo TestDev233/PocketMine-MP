@@ -21,18 +21,21 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\utils;
+namespace pocketmine\block\utils;
 
-use PHPUnit\Framework\TestCase;
+interface CoralMaterial{
 
-class EnumTraitTest extends TestCase{
+	public function getCoralType() : CoralType;
 
 	/**
-	 * @doesNotPerformAssertions
+	 * @return $this
 	 */
-	public function testEnumLazyInit() : void{
-		foreach([TestEnum::ONE(), TestEnum::TWO(), TestEnum::THREE()] as $member){
-			//NOOP
-		}
-	}
+	public function setCoralType(CoralType $coralType) : self;
+
+	public function isDead() : bool;
+
+	/**
+	 * @return $this
+	 */
+	public function setDead(bool $dead) : self;
 }

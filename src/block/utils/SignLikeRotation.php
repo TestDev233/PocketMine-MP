@@ -21,24 +21,19 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\plugin;
+namespace pocketmine\block\utils;
 
-/**
- * @deprecated
- */
-interface ResourceProvider{
-	/**
-	 * Gets an embedded resource on the plugin file.
-	 * WARNING: You must close the resource given using fclose()
-	 *
-	 * @return null|resource Resource data, or null
-	 */
-	public function getResource(string $filename);
+interface SignLikeRotation{
 
 	/**
-	 * Returns all the resources packaged with the plugin in the form ["path/in/resources" => SplFileInfo]
-	 *
-	 * @return \SplFileInfo[]
+	 * @return int between 0 and 15
 	 */
-	public function getResources() : array;
+	public function getRotation() : int;
+
+	/**
+	 * @param int $rotation between 0 and 15
+	 *
+	 * @return $this
+	 */
+	public function setRotation(int $rotation) : self;
 }

@@ -21,13 +21,14 @@
 
 declare(strict_types=1);
 
-/**
- * Events related to the server core, like networking, stop, console commands
- */
-namespace pocketmine\event\server;
+namespace pocketmine\block\utils;
 
-use pocketmine\event\Event;
+interface Ageable{
 
-abstract class ServerEvent extends Event{
+	public function getAge() : int;
 
+	/**
+	 * @return $this
+	 */
+	public function setAge(int $age) : self;
 }

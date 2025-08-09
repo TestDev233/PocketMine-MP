@@ -21,11 +21,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\block\utils;
 
-/**
- * @deprecated
- */
-class WeightedPressurePlateLight extends WeightedPressurePlate{
+interface WoodMaterial{
 
+	public function getWoodType() : WoodType;
 }

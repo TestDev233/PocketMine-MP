@@ -290,6 +290,12 @@ class World implements ChunkManager{
 	private array $chunks = [];
 
 	/**
+	 * @var true[]
+	 * @phpstan-var array<ChunkPosHash, true>
+	 */
+	private array $knownUngeneratedChunks = [];
+
+	/**
 	 * @var Vector3[][] chunkHash => [relativeBlockHash => Vector3]
 	 * @phpstan-var array<ChunkPosHash, array<ChunkBlockPosHash, Vector3>>
 	 */
@@ -625,6 +631,7 @@ class World implements ChunkManager{
 			self::getXZ($chunkHash, $chunkX, $chunkZ);
 			$this->unloadChunk($chunkX, $chunkZ, false);
 		}
+		$this->knownUngeneratedChunks = [];
 		foreach($this->entitiesByChunk as $chunkHash => $entities){
 			self::getXZ($chunkHash, $chunkX, $chunkZ);
 
@@ -1669,25 +1676,6 @@ class World implements ChunkManager{
 	}
 
 	/**
-	 * @deprecated Use {@link World::getBlockCollisionBoxes()} instead (alongside {@link World::getCollidingEntities()}
-	 * if entity collision boxes are also required).
-	 *
-	 * @return AxisAlignedBB[]
-	 * @phpstan-return list<AxisAlignedBB>
-	 */
-	public function getCollisionBoxes(Entity $entity, AxisAlignedBB $bb, bool $entities = true) : array{
-		$collides = $this->getBlockCollisionBoxes($bb);
-
-		if($entities){
-			foreach($this->getCollidingEntities($bb->expandedCopy(0.25, 0.25, 0.25), $entity) as $ent){
-				$collides[] = clone $ent->boundingBox;
-			}
-		}
-
-		return $collides;
-	}
-
-	/**
 	 * Computes the percentage of a circle away from noon the sun is currently at. This can be multiplied by 2 * M_PI to
 	 * get an angle in radians, or by 360 to get an angle in degrees.
 	 */
@@ -2625,6 +2613,16 @@ class World implements ChunkManager{
 	}
 
 	public function setChunk(int $chunkX, int $chunkZ, Chunk $chunk) : void{
+		foreach($chunk->getSubChunks() as $subChunk){
+			foreach($subChunk->getBlockLayers() as $blockLayer){
+				foreach($blockLayer->getPalette() as $blockStateId){
+					if(!$this->blockStateRegistry->hasStateId($blockStateId)){
+						throw new \InvalidArgumentException("Provided chunk contains unknown/unregistered blocks (found unknown state ID $blockStateId)");
+					}
+				}
+			}
+		}
+
 		$chunkHash = World::chunkHash($chunkX, $chunkZ);
 		$oldChunk = $this->loadChunk($chunkX, $chunkZ);
 		if($oldChunk !== null && $oldChunk !== $chunk){
@@ -2657,6 +2655,7 @@ class World implements ChunkManager{
 		}
 
 		$this->chunks[$chunkHash] = $chunk;
+		unset($this->knownUngeneratedChunks[$chunkHash]);
 
 		$this->blockCacheSize -= count($this->blockCache[$chunkHash] ?? []);
 		unset($this->blockCache[$chunkHash]);
@@ -2921,6 +2920,9 @@ class World implements ChunkManager{
 		if(isset($this->chunks[$chunkHash = World::chunkHash($x, $z)])){
 			return $this->chunks[$chunkHash];
 		}
+		if(isset($this->knownUngeneratedChunks[$chunkHash])){
+			return null;
+		}
 
 		$this->timings->syncChunkLoad->startTiming();
 
@@ -2940,6 +2942,7 @@ class World implements ChunkManager{
 
 		if($loadedChunkData === null){
 			$this->timings->syncChunkLoad->stopTiming();
+			$this->knownUngeneratedChunks[$chunkHash] = true;
 			return null;
 		}
 
@@ -3340,7 +3343,7 @@ class World implements ChunkManager{
 		/** @phpstan-var PromiseResolver<Chunk> $resolver */
 		$resolver = $this->chunkPopulationRequestMap[$chunkHash] = new PromiseResolver();
 		if($associatedChunkLoader === null){
-			$temporaryLoader = new class implements ChunkLoader{};
+			$temporaryLoader = new ChunkLoader();
 			$this->registerChunkLoader($temporaryLoader, $chunkX, $chunkZ);
 			$resolver->getPromise()->onCompletion(
 				fn() => $this->unregisterChunkLoader($temporaryLoader, $chunkX, $chunkZ),
@@ -3387,7 +3390,7 @@ class World implements ChunkManager{
 			return [$resolver, false];
 		}
 
-		$temporaryChunkLoader = new class implements ChunkLoader{};
+		$temporaryChunkLoader = new ChunkLoader();
 		$this->registerChunkLoader($temporaryChunkLoader, $chunkX, $chunkZ);
 		$chunk = $this->loadChunk($chunkX, $chunkZ);
 		$this->unregisterChunkLoader($temporaryChunkLoader, $chunkX, $chunkZ);
@@ -3472,8 +3475,7 @@ class World implements ChunkManager{
 
 			$chunkPopulationLockId = new ChunkLockId();
 
-			$temporaryChunkLoader = new class implements ChunkLoader{
-			};
+			$temporaryChunkLoader = new ChunkLoader();
 			for($xx = -1; $xx <= 1; ++$xx){
 				for($zz = -1; $zz <= 1; ++$zz){
 					$this->lockChunk($chunkX + $xx, $chunkZ + $zz, $chunkPopulationLockId);

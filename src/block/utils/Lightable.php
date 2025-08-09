@@ -21,11 +21,14 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\block\utils;
 
-/**
- * @deprecated
- */
-class WeightedPressurePlateHeavy extends WeightedPressurePlate{
+interface Lightable{
 
+	public function isLit() : bool;
+
+	/**
+	 * @return $this
+	 */
+	public function setLit(bool $lit = true) : self;
 }

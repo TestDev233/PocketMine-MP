@@ -21,20 +21,14 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\scheduler;
+namespace pocketmine\block\utils;
 
-class PublishProgressRaceAsyncTask extends AsyncTask{
-	/** @var bool */
-	public static $success = false;
+interface PoweredByRedstone{
 
-	public function onRun() : void{
-		$this->publishProgress("hello");
-	}
+	public function isPowered() : bool;
 
-	public function onProgressUpdate($progress) : void{
-		if($progress === "hello"){
-			// thread local on main thread
-			self::$success = true;
-		}
-	}
+	/**
+	 * @return $this
+	 */
+	public function setPowered(bool $powered) : self;
 }

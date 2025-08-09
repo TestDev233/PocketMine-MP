@@ -1,0 +1,54 @@
+name: Build PocketMine-MP
+
+on:
+  push:
+    branches:
+      - command-alias-handling
+  pull_request:
+    branches:
+      - command-alias-handling
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clone repository
+        run: git clone https://github.com/TestDev233/PocketMine-MP
+      
+      - name: Update submodules
+        run: git submodule update --init --recursive
+        working-directory: ./PocketMine-MP
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, json, yaml, sqlite3
+          tools: composer
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('PocketMine-MP/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-dev --no-progress --prefer-dist --ignore-platform-reqs
+        working-directory: ./PocketMine-MP
+
+      - name: Build PocketMine-MP
+        run: composer make-server
+        working-directory: ./PocketMine-MP
+
+      - name: Upload PocketMine-MP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PocketMine-MP.phar
+          path: PocketMine-MP/PocketMine-MP.phar

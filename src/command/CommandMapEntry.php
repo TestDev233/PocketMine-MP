@@ -21,26 +21,28 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\utils;
+namespace pocketmine\command;
 
-/**
- * This doc-block is generated automatically, do not modify it manually.
- * This must be regenerated whenever registry members are added, removed or changed.
- * @see RegistryTrait::_generateMethodAnnotations()
- *
- * @method static self ONE()
- * @method static self TWO()
- * @method static self THREE()
- */
+use pocketmine\lang\Translatable;
 
-class TestEnum{
-	use EnumTrait;
+final class CommandMapEntry{
 
-	protected static function setup() : void{
-		self::registerAll(
-			new self("one"),
-			new self("two"),
-			new self("three")
-		);
+	/**
+	 * @param string[] $aliases
+	 * @phpstan-param non-empty-list<string> $aliases
+	 */
+	public function __construct(
+		public readonly Command $command,
+		public readonly array $aliases
+	){}
+
+	public function getPreferredAlias() : string{
+		return $this->aliases[0];
+	}
+
+	public function getUsage() : Translatable|string{
+		//TODO: usage messages ought to use user-specified alias, not command preferred
+		//command-preferred is confusing if the user used a different alias
+		return $this->command->getUsage() ?? "/" . $this->getPreferredAlias();
 	}
 }
