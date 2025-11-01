@@ -48,7 +48,7 @@ jobs:
         working-directory: ./PocketMine-MP
 
       - name: Upload PocketMine-MP artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: PocketMine-MP.phar
           path: PocketMine-MP/PocketMine-MP.phar
