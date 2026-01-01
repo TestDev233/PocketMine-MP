@@ -33,7 +33,7 @@ jobs:
         run: echo "dir=$(composer config cache-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('PocketMine-MP/composer.lock') }}
@@ -48,7 +48,7 @@ jobs:
         working-directory: ./PocketMine-MP
 
       - name: Upload PocketMine-MP artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: PocketMine-MP.phar
           path: PocketMine-MP/PocketMine-MP.phar
